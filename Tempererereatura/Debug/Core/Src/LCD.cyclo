@@ -1,0 +1,13 @@
+../Core/Src/LCD.c:17:13:software_delay	3
+../Core/Src/LCD.c:35:6:LCD_init	1
+../Core/Src/LCD.c:81:6:LCD_send_4bits	6
+../Core/Src/LCD.c:97:6:LCD_send_8bits_twice_4bits	1
+../Core/Src/LCD.c:103:6:LCD_write_command	1
+../Core/Src/LCD.c:109:6:LCD_write_data	1
+../Core/Src/LCD.c:114:6:LCD_write_char	2
+../Core/Src/LCD.c:121:6:LCD_write_text	2
+../Core/Src/LCD.c:129:6:LCD_goto_xy	3
+../Core/Src/LCD.c:139:6:LCD_goto_line	1
+../Core/Src/LCD.c:144:6:LCD_printf_line	3
+../Core/Src/LCD.c:160:9:LCD_printf	1
+../Core/Src/LCD.c:174:6:LCD_create_custom_character	2
