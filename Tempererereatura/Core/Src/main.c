@@ -55,6 +55,7 @@
 /* USER CODE BEGIN PM */
 
 /* USER CODE END PM */
+//Test tekstu 2
 
 /* Private variables ---------------------------------------------------------*/
 
