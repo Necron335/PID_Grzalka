@@ -37,6 +37,7 @@
 #include "bmp2.h"
 #include "LCD.h"
 
+// Test zmiany 2
 
 /* USER CODE END Includes */
 
