@@ -37,7 +37,6 @@
 #include "bmp2.h"
 #include "LCD.h"
 
-// Test zmiany 2
 
 /* USER CODE END Includes */
 
@@ -55,7 +54,6 @@
 /* USER CODE BEGIN PM */
 
 /* USER CODE END PM */
-//Test tekstu 2
 
 /* Private variables ---------------------------------------------------------*/
 
@@ -63,7 +61,10 @@
 float current_temp_f;
 char current_temp_ch_UART[29];
 char current_temp_ch_LCD[29];
-float set_temp_f = 30.0;
+float set_temp_f = 60.0;
+
+double akt_temp = 0.0f;
+float akt_temp_f= 0.0f;
 
 char set_temp_ch_UART[24];
 char set_temp_ch_LCD[24];
@@ -72,6 +73,7 @@ int32_t pressure;
 uint32_t enc_uint;
 static uint32_t prev_enc_uint = 65535 / 2;
 int32_t enc_diff_int;
+int suma_enkodera;
 
 char enc_ch[64];
 
@@ -197,9 +199,9 @@ int main(void)
   HAL_Delay(2000);
 
   // Initialize PID Controller parameters and init data
-  PID1.Kp = 0.03928;
-  PID1.Ki = 0.0002692;
-  PID1.Kd = 0.01957;
+  PID1.Kp = 100;
+  PID1.Ki = 1;
+  PID1.Kd = 20;
   PID1.Tp = 1;
   PID1.prev_error = 0;
   PID1.prev_u_I = 0;
@@ -223,7 +225,7 @@ int main(void)
 	  enc_diff_int = enc_uint - prev_enc_uint;
 	  if(enc_diff_int >= 2 || enc_diff_int <= -2){
 		  enc_diff_int /= 2;
-		  set_temp_f += 0.5 * enc_diff_int;
+		  set_temp_f += enc_diff_int;//*0.5;
 		  if(set_temp_f > 65) set_temp_f = 65;
 		  if(set_temp_f < 20) set_temp_f = 20;
 	  }
@@ -242,7 +244,7 @@ int main(void)
 	  HAL_Delay(100);
 	  LCD_write_text("                ");
 	  LCD_write_command(LCD_HOME_INSTRUCTION);
-
+	  akt_temp=BMP2_ReadTemperature_degC(&bmp2dev);
 	  // Reset data from UART
 	  memset(get_UART, 0, 10);
 
@@ -317,16 +319,20 @@ static void MX_NVIC_Init(void)
 // TIMERS callback handling
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	if(htim->Instance == TIM3){
+		static unsigned int cnt = 0;
+		cnt++;
 		// TEMPERATURE
 		BMP2_ReadData(&bmp2dev, &pressure, &current_temp_f);
-		current_temp_f=20;
+		akt_temp=BMP2_ReadTemperature_degC(&bmp2dev);
+		akt_temp_f=akt_temp;
+		//current_temp_f=20;
 		sprintf(current_temp_ch_UART, "Current temperature: %.2f\n\r", current_temp_f);
 		HAL_UART_Transmit(&huart3, (uint8_t *)current_temp_ch_UART, sizeof(current_temp_ch_UART)-1, 1000);
 
 		sprintf((char*)set_temp_ch_UART, "Set temperature: %.2f\n\r", set_temp_f);
 		HAL_UART_Transmit(&huart3, (uint8_t*)set_temp_ch_UART, strlen(set_temp_ch_UART), 1000);
 
-		pwm_duty_f = (htim1.Init.Period * calculate_PID(&PID1, set_temp_f, current_temp_f));
+		pwm_duty_f = (htim1.Init.Period * calculate_PID(&PID1, set_temp_f, akt_temp));
 
 		// Saturation
 		if(pwm_duty_f < 0.0) pwm_duty_u = 0;
