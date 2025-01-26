@@ -61,7 +61,7 @@
 float current_temp_f;
 char current_temp_ch_UART[29];
 char current_temp_ch_LCD[29];
-float set_temp_f = 30.0;
+float set_temp_f = 25.0;
 
 double akt_temp = 0.0f;
 float akt_temp_f= 0.0f;
@@ -327,7 +327,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 		akt_temp=BMP2_ReadTemperature_degC(&bmp2dev);
 		akt_temp_f=akt_temp;
 		//current_temp_f=20;
-		sprintf(current_temp_ch_UART, "Current temperature: %.2f\n\r", current_temp_f);
+		sprintf(current_temp_ch_UART, "Current temperature: %.2f\n\r", akt_temp_f);
 		HAL_UART_Transmit(&huart3, (uint8_t *)current_temp_ch_UART, sizeof(current_temp_ch_UART)-1, 1000);
 
 		sprintf((char*)set_temp_ch_UART, "Set temperature: %.2f\n\r", set_temp_f);
