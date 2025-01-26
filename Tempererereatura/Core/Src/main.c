@@ -61,7 +61,7 @@
 float current_temp_f;
 char current_temp_ch_UART[29];
 char current_temp_ch_LCD[29];
-float set_temp_f = 60.0;
+float set_temp_f = 30.0;
 
 double akt_temp = 0.0f;
 float akt_temp_f= 0.0f;
@@ -199,9 +199,9 @@ int main(void)
   HAL_Delay(2000);
 
   // Initialize PID Controller parameters and init data
-  PID1.Kp = 100;
-  PID1.Ki = 1;
-  PID1.Kd = 20;
+  PID1.Kp = 60;
+  PID1.Ki = 0.1;
+  PID1.Kd =30;
   PID1.Tp = 1;
   PID1.prev_error = 0;
   PID1.prev_u_I = 0;
@@ -221,7 +221,8 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  // ENCODER
-	  enc_uint = __HAL_TIM_GET_COUNTER(&htim4);	// enc_uint = htim4.Instance->CNT;
+	  //enc_uint = __HAL_TIM_GET_COUNTER(&htim4);	// enc_uint = htim4.Instance->CNT;
+	  enc_uint = htim4.Instance->CNT;
 	  enc_diff_int = enc_uint - prev_enc_uint;
 	  if(enc_diff_int >= 2 || enc_diff_int <= -2){
 		  enc_diff_int /= 2;
