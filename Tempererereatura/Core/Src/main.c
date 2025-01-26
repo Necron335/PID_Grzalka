@@ -26,7 +26,8 @@
 #include "usart.h"
 #include "usb_otg.h"
 #include "gpio.h"
-
+#include "encoder.h"
+#include "encoder_config.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stdio.h"
@@ -58,10 +59,13 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
 float current_temp_f;
 char current_temp_ch_UART[29];
 char current_temp_ch_LCD[29];
 float set_temp_f = 25.0;
+float temp_step=1.0;
+int numerke;
 
 double akt_temp = 0.0f;
 float akt_temp_f= 0.0f;
@@ -200,7 +204,7 @@ int main(void)
 
   // Initialize PID Controller parameters and init data
   PID1.Kp = 60;
-  PID1.Ki = 0.1;
+  PID1.Ki = 0.5;
   PID1.Kd =30;
   PID1.Tp = 1;
   PID1.prev_error = 0;
@@ -250,17 +254,27 @@ int main(void)
 	      }
 
 
-	  // ENCODER
-	  //enc_uint = __HAL_TIM_GET_COUNTER(&htim4);	// enc_uint = htim4.Instance->CNT;
-	  enc_uint = htim4.Instance->CNT;
-	  enc_diff_int = enc_uint - prev_enc_uint;
-	  if(enc_diff_int >= 2 || enc_diff_int <= -2){
-		  enc_diff_int /= 2;
-		  set_temp_f += enc_diff_int;//*0.5;
-		  if(set_temp_f > 65) set_temp_f = 65;
-		  if(set_temp_f < 20) set_temp_f = 20;
-	  }
-	  prev_enc_uint = enc_uint;
+
+	      // Odczytanie wartości enkodera
+	          int32_t encoder_value = ENC_GetCounter(&henc1);
+	          numerke=encoder_value;
+	          // Zresetowanie wartości enkodera po odczycie
+	          ENC_SetCounter(&henc1, 0);
+
+	          // Sprawdzanie kierunku (wartość dodatnia lub ujemna)
+	          if (numerke > 0) {
+	              set_temp_f += temp_step; // Obrót w prawo -> zwiększ temperaturę
+	          } else if (numerke < 0) {
+	              set_temp_f -= temp_step; // Obrót w lewo -> zmniejsz temperaturę
+	          }
+
+	          // Zabezpieczenie przed wyjściem poza zakres (np. 15.0°C - 35.0°C)
+	          if (set_temp_f < 20.0f) {
+	              set_temp_f = 20.0f;
+	          } else if (set_temp_f > 34.0f) {
+	              set_temp_f = 34.0f;
+	          }
+
 
 	  // LCD
 	  snprintf(current_temp_ch_LCD, LCD_MAXIMUM_LINE_LENGTH, "Temp:  %.2f", current_temp_f);
@@ -376,6 +390,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 
 
 	}
+	if(htim->Instance == TIM4){
+		uint8_t tx_buffer[32];
+		  int tx_msg_len = sprintf((char*)tx_buffer, "Encoder counter: %lu\n\r", ENC_GetCounter(&henc1));
+		  HAL_UART_Transmit(&huart3, tx_buffer, tx_msg_len, 100);
+	}
 
 }
 
@@ -384,7 +403,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 	if(huart->Instance == USART3){
 		float tmp = atof(get_UART);
 		if(tmp < 20) set_temp_f = 20;
-		else if(tmp > 65) set_temp_f = 65;
+		else if(tmp > 34) set_temp_f = 34;
 		else set_temp_f = tmp;
 
 		HAL_UARTEx_ReceiveToIdle_DMA(&huart3, (uint8_t *)get_UART, 10);
