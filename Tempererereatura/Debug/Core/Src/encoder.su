@@ -1,0 +1,3 @@
+../Core/Src/encoder.c:39:6:ENC_Init	16	static
+../Core/Src/encoder.c:49:10:ENC_GetCounter	24	static
+../Core/Src/encoder.c:63:6:ENC_SetCounter	16	static
