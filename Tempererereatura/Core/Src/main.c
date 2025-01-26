@@ -219,6 +219,36 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  // LD1: pwm_duty_u > 0
+	      if (pwm_duty_u > 0)
+	      {
+	          HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_SET); // Turn on LD1
+	      }
+	      else
+	      {
+	          HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_RESET); // Turn off LD1
+	      }
+
+	      // LD2: pwm_duty_u <= 0
+	      if (pwm_duty_u <= 0)
+	      {
+	          HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET); // Turn on LD2
+	      }
+	      else
+	      {
+	          HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET); // Turn off LD2
+	      }
+
+	      // LD3: |set_temp_f - akt_temp_f| <= 0.1
+	      if (fabs(set_temp_f - akt_temp_f) <= 0.1)
+	      {
+	          HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET); // Turn on LD3
+	      }
+	      else
+	      {
+	          HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET); // Turn off LD3
+	      }
+
 
 	  // ENCODER
 	  //enc_uint = __HAL_TIM_GET_COUNTER(&htim4);	// enc_uint = htim4.Instance->CNT;
@@ -342,6 +372,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 
 //		pwm_duty_u = htim1.Init.Period;		// 100% PWM duty for creating model
 		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, pwm_duty_u);
+
+
 
 	}
 
