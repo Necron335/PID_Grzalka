@@ -36,7 +36,7 @@
 #include "bmp2_config.h"
 #include "bmp2_defs.h"
 #include "bmp2.h"
-#include "LCD.h"
+
 
 
 /* USER CODE END Includes */
@@ -59,7 +59,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+extern USART_HandleTypeDef husart6;
 float current_temp_f;
 char current_temp_ch_UART[29];
 char current_temp_ch_LCD[29];
@@ -71,7 +71,6 @@ double akt_temp = 0.0f;
 float akt_temp_f= 0.0f;
 
 char set_temp_ch_UART[24];
-char set_temp_ch_LCD[24];
 int32_t pressure;
 
 uint32_t enc_uint;
@@ -197,9 +196,7 @@ int main(void)
   // Prevents from bugging set_temp_f when encoder counter value goes through 0
   htim4.Instance->CNT = 65535 / 2;
 
-  LCD_init();
-  LCD_write_command(LCD_CLEAR_INSTRUCTION);
-  LCD_write_command(LCD_HOME_INSTRUCTION);
+
   HAL_Delay(2000);
 
   // Initialize PID Controller parameters and init data
@@ -275,23 +272,6 @@ int main(void)
 	              set_temp_f = 34.0f;
 	          }
 
-
-	  // LCD
-	  snprintf(current_temp_ch_LCD, LCD_MAXIMUM_LINE_LENGTH, "Temp:  %.2f", current_temp_f);
-	  LCD_write_text(current_temp_ch_LCD);
-	  LCD_write_data(LCD_CHAR_DEGREE);
-	  LCD_write_char('C');
-	  snprintf(set_temp_ch_LCD, LCD_MAXIMUM_LINE_LENGTH, "Set T: %.2f", set_temp_f);
-	  LCD_goto_line(1);
-	  LCD_write_text(set_temp_ch_LCD);
-	  LCD_write_data(LCD_CHAR_DEGREE);
-	  LCD_write_char('C');
-	  HAL_Delay(100);
-	  LCD_write_text("                ");
-	  LCD_write_command(LCD_HOME_INSTRUCTION);
-	  akt_temp=BMP2_ReadTemperature_degC(&bmp2dev);
-	  // Reset data from UART
-	  memset(get_UART, 0, 10);
 
   }
   /* USER CODE END 3 */
